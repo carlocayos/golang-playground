@@ -21,6 +21,4 @@ func main() {
 		// 2 bird
 		// 3 possum
 	}
-
-
 }
