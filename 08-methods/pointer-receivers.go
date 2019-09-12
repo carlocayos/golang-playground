@@ -21,6 +21,8 @@ func (v Vertex) Abs() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y)
 }
 
+//TODO: As above, try removing the "*" from *Vertex to change to a value receiver
+//func (v Vertex) Scale(f float64) {
 func (v *Vertex) Scale(f float64) {
 	v.X = v.X * f
 	v.Y = v.Y * f
@@ -30,4 +32,7 @@ func main() {
 	v := Vertex{3, 4}
 	v.Scale(10)
 	fmt.Println(v.Abs())
+
+	// if value receiver (v Vertex) == 5
+	// if Pointer receiver (v *Vertex) == 50
 }
