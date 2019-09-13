@@ -1,3 +1,12 @@
+/*
+How to run
+1. Generate cipher key and save to secret.key file
+   ./aes --genkey > secret.key
+2. Encrypt message.txt content using generate cipher and save to ciphertext.dat
+   ./aes secret.key message.txt > ciphertext.dat
+3. Decrypt ciphertext.dat using secret.key
+   ./aes secret.key ciphertext.dat -d
+*/
 package main
 
 import (
@@ -45,11 +54,11 @@ func generateKey() []byte {
 	randomBytes := make([]byte, 32) // 32 bytes is 256 bits
 	numberOfBytes, err := rand.Read(randomBytes)
 	if err != nil {
-		log.Fatal("error generating random key", err)
+		log.Fatal("error generating random key. ", err)
 	}
 
 	if numberOfBytes != 32 {
-		log.Fatal("incorrect number of bytes", err)
+		log.Fatal("incorrect number of bytes. ", err)
 	}
 	return randomBytes
 }
@@ -95,9 +104,8 @@ func checkArgs() (string, string, bool) {
 			os.Exit(0) // exit gracefully no error
 		}
 		if os.Args[1] == "-g" || os.Args[1] == "--genkey" {
-			// TODO: func generateKey
 			key := generateKey()
-			fmt.Printf("Generated Key: %x\n", key)
+			fmt.Printf(string(key))
 			os.Exit(0) // graceful exit
 		}
 	}
@@ -114,7 +122,7 @@ func checkArgs() (string, string, bool) {
 	// If 3 args are provided,
 	// check that the last one is -d or --decrypt
 	if len(os.Args) == 4 {
-		if os.Args[3] != "-d" || os.Args[3] != "--decrypt" {
+		if os.Args[3] != "-d" && os.Args[3] != "--decrypt" {
 			fmt.Println("Error: unknown usage.")
 			printUsage()
 			os.Exit(1) // exit with error
@@ -124,17 +132,52 @@ func checkArgs() (string, string, bool) {
 	return "", "", false
 }
 
+func decrypt(key, cipherText []byte) ([]byte, error) {
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// separate the IV nonce from the encrypted message
+	iv := cipherText[:aes.BlockSize]
+	cipherText = cipherText[aes.BlockSize:]
+
+	stream := cipher.NewCTR(block, iv)
+	stream.XORKeyStream(cipherText, cipherText)
+
+	return cipherText, nil
+}
+
 func main() {
-	log.Println("TEST ME")
 	keyFile, file, decryptFlag := checkArgs()
-	fmt.Println(keyFile, file, decryptFlag)
 
 	// load key from file
 	keyFileData, err := ioutil.ReadFile(keyFile)
 	if err != nil {
-		log.Fatal("invalid key", err)
+		log.Fatal("invalid key. ", err)
 	}
 
-	fmt.Printf("keyFileData = %s", keyFileData)
+	messageData, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatal("invalid message data. ", err)
+	}
 
+	// decrypt
+	if decryptFlag {
+		// read the message.txt
+		plainText, err := decrypt(keyFileData, messageData)
+		if err != nil {
+			log.Fatal("error in decrypting. ", err)
+		}
+
+		fmt.Printf("Plaintext = %s", plainText)
+	} else {
+		cipherText, err := encrypt(keyFileData, messageData)
+		if err != nil {
+			log.Fatal("encryption failed. ", err)
+		}
+		//fmt.Printf("encrypted data = %x\n", cipherText)
+		fmt.Printf(string(cipherText))
+	}
 }
