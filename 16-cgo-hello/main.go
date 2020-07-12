@@ -1,5 +1,6 @@
 package main
 
+
 /*
  #include "hello.c"
  #include "sum.c"
@@ -24,8 +25,13 @@ func main() {
 
 	// call C function sum()
 	sumCint := C.sum(aCint, bCint)
-
 	// convert back from C int to Go int
 	sum := int(sumCint)
 	fmt.Printf("%d + %d = %d\n", a, b, sum)
+
+	// call C function sum_magic()
+	sumCintMagic := C.sum_magic(aCint, bCint)
+	// convert back from C int to Go int
+	sum = int(sumCintMagic)
+	fmt.Printf("%d + %d + MAGIC_NUMBER = %d\n", a, b, sum)
 }

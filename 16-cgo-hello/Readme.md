@@ -9,3 +9,8 @@ or build and run
 ```shell script
 go run main.go
 ```
+
+List all macros
+```shell script
+clang -dM -E -x c /dev/null
+```
